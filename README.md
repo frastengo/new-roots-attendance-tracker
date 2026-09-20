@@ -11,11 +11,12 @@ A small web app that takes a raw Zoom attendance CSV, scores it against the Fell
 
 1. After a session, download the attendance report from Zoom as a CSV (Zoom's usual export).
 2. Go to the app link above.
-3. Click **Choose File**, select the CSV you downloaded.
+3. Drag the CSV file onto the upload box (or click it to browse and choose the file).
 4. Click **Upload & Score Attendance**.
 5. Within a few seconds, a results page appears summarizing how many Fellows were marked Present/Absent. The Google Sheet roster is updated at the same time — new columns appear at the right edge: **Attendance Status**, **Minutes Attended**, and **Notes**.
-6. If any names from the Zoom report couldn't be matched to a Fellow on the roster (a guest speaker, a staff member, a blank name, etc.), they're listed on a second tab of the Sheet called **"Unmatched Zoom Entries"** — nothing is silently dropped, so staff can eyeball that tab and manually reconcile anything unusual.
-7. A **"Download results as CSV"** button is also provided on the results page as a standalone copy of the same output, independent of Google Sheets.
+6. On the results page, you can **search** the table by name or email, **click any column header** to sort (e.g., by Minutes Attended, to see the closest calls first), and page through results — handy once a cohort has a few hundred Fellows.
+7. If any names from the Zoom report couldn't be matched to a Fellow on the roster (a guest speaker, a staff member, a blank name, etc.), they're listed on a second tab of the Sheet called **"Unmatched Zoom Entries"** — nothing is silently dropped, so staff can eyeball that tab and manually reconcile anything unusual.
+8. A **"Download results as CSV"** button is also provided on the results page as a standalone copy of the same output, independent of Google Sheets.
 
 You can re-upload a corrected CSV at any time — it simply overwrites the Attendance Status/Minutes/Notes columns and the Unmatched tab with the newest results.
 
@@ -35,7 +36,7 @@ Staff's browser --(CSV upload)--> Node.js/Express app (Render, free tier)
                          Staff's roster Google Sheet (2 tabs updated)
 ```
 
-- **Frontend**: a single plain-HTML upload form served by the same Express app — no separate frontend framework, since the only interaction is "pick a file, click a button."
+- **Frontend**: server-rendered HTML from the same Express app — no separate frontend framework or build step, since the interaction is simple (upload a file, view a results table). Styled to match New Roots' actual brand (colors and "Albert Sans" typeface pulled from newrootsinstitute.org) so it feels like a real internal tool rather than a generic prototype. The upload page has a drag-and-drop dropzone; the results page has client-side search, column sorting, and pagination (plain JavaScript, no libraries) so a few hundred Fellows stay easy to scan.
 - **Backend**: Node.js + Express, deployed on Render's free web service tier, built from a private GitHub repo.
 - **Google Sheets access**: Google recently defaults new personal Cloud projects to blocking service-account **key downloads** (an org-wide "Secure by Default" policy), and I don't have org-admin rights on this Google account to override it. So instead of a service account, the app authenticates as a real Google user via **OAuth2 with a refresh token** — a one-time authorization was done locally, and the resulting long-lived refresh token is stored as a server-side environment variable (never in code or in the repo). This means the Sheet only needs to be shared with the Google account that ran that one-time authorization, exactly like sharing it with a colleague.
 - **No database**: the CSV is processed entirely in memory per request and never persisted; the Google Sheet itself is the system of record.
