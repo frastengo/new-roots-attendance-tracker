@@ -15,6 +15,13 @@ app.get('/', (req, res) => {
   res.send(renderUploadPage());
 });
 
+// Uploading only happens via the form's POST; a GET here means someone refreshed
+// the results page or used the browser back/forward buttons — send them home
+// instead of showing Express's raw "Cannot GET" error page.
+app.get('/upload', (req, res) => {
+  res.redirect('/');
+});
+
 app.post('/upload', upload.single('zoomCsv'), async (req, res) => {
   try {
     if (!req.file) {
@@ -40,6 +47,11 @@ app.post('/upload', upload.single('zoomCsv'), async (req, res) => {
 });
 
 app.get('/health', (req, res) => res.send('ok'));
+
+// Any other unrecognized URL: send the user home instead of a raw Express error.
+app.use((req, res) => {
+  res.redirect('/');
+});
 
 function layout(title, body) {
   return `<!doctype html>
